@@ -1,7 +1,5 @@
-use super::*;
-use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok, traits::Hooks};
-use std;
+use crate::mock::*;
+use frame_support::{assert_ok, traits::Hooks};
 
 /// Run until a particular block.
 pub fn run_to_block(n: u64) {
@@ -16,11 +14,9 @@ pub fn run_to_block(n: u64) {
 }
 
 #[test]
-fn submit_topic_with_or_without_sufficient_funds() {
+fn submit_topic_with_sufficient_funds() {
 	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
 		assert_ok!(QuadVoting::submit_topic(Origin::signed(1), vec![0]));
-		// assert_err!(QuadVoting::submit_topic(Origin::signed(1), vec![5]));
 	});
 }
 
@@ -79,14 +75,17 @@ fn test_voting_end_to_end() {
 
 		// Use a different user to vote only item 2
 		assert_ok!(QuadVoting::vote_topic(Origin::signed(2), current_topics[1]));
+		assert_ok!(QuadVoting::vote_topic(Origin::signed(2), current_topics[2]));
 
 		// Get votes for blcok
 		let votes = QuadVoting::get_votes(System::block_number()).expect("should have votes");
+		assert_eq!(votes.len(), 4);
 
 		run_to_block(40);
 		QuadVoting::on_initialize(System::block_number());
 
-		let winners = QuadVoting::get_winners(40).expect("should have some winners");
-		println!("votes:🔥 {:?}", winners);
+		let winner = QuadVoting::get_winners(20).expect("should have some winners");
+		// The winner for the block 20 era should be topic 2 as it had the most votes.
+		assert_eq!(current_topics[2], winner);
 	})
 }

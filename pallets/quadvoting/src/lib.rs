@@ -44,13 +44,12 @@ pub use pallet::*;
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		log,
 		pallet_prelude::*,
 		sp_runtime::traits::{Hash, Zero},
 		traits::{Currency, LockableCurrency, ReservableCurrency},
 	};
 	use frame_system::pallet_prelude::*;
-	use sp_std::{collections::btree_map::*, fmt, vec, vec::Vec, *};
+	use sp_std::{collections::btree_map::*, vec, vec::Vec, *};
 
 	type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -75,6 +74,9 @@ pub mod pallet {
 		/// The number of blocks between each era.
 		#[pallet::constant]
 		type EraDuration: Get<Self::BlockNumber>;
+
+		#[pallet::constant]
+		type OneBlock: Get<BlockNumberFor<Self>>;
 
 		// The max allowed number of votes a single user can make
 		#[pallet::constant]
@@ -150,21 +152,20 @@ pub mod pallet {
 			if (block_number % era_duration).is_zero() {
 				Self::deposit_event(Event::<T>::NewEra { era: block_number });
 
-				// using rem_euclid algorithm to get the current era.
-				let curr_era = ((block_number % era_duration) + era_duration) % era_duration;
-				let votes = <Votes<T>>::get(curr_era).unwrap_or(vec![]);
+				let prev_era = ((block_number - T::OneBlock::get()) / era_duration) * era_duration;
+				let votes = <Votes<T>>::get(prev_era).unwrap_or(vec![]);
 
-				let (mut topics, _): (Vec<T::Hash>, Vec<T::AccountId>) = votes.into_iter().unzip();
+				let (topics, _): (Vec<T::Hash>, Vec<T::AccountId>) =
+					votes.clone().into_iter().unzip();
+
 				let mut counts = BTreeMap::new();
 				for word in topics.iter() {
 					*counts.entry(word).or_insert(0) += 1;
 				}
+
 				match counts.iter().max_by_key(|entry| entry.1) {
 					None => (),
-					Some((key, _)) => {
-						panic!("{:?}", key);
-						<Winners<T>>::set(block_number, Some(**key))
-					},
+					Some((key, _)) => <Winners<T>>::set(prev_era, Some(**key)),
 				};
 
 				//  New era is starting.

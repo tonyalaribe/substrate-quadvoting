@@ -1,5 +1,4 @@
 use crate as pallet_quadvoting;
-use crate::Config;
 use frame_support::traits::{ConstU16, ConstU64};
 use frame_system as system;
 use sp_core::H256;
@@ -70,6 +69,7 @@ impl pallet_quadvoting::Config for Test {
 	type EraDuration = ConstU64<20>;
 	type MaxVotes = ConstU16<10>;
 	type Currency = Balances;
+	type OneBlock = ConstU64<1>;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -82,14 +82,3 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	.unwrap();
 	t.into()
 }
-
-// Run until a particular block.
-// pub fn run_to_block(n: u64) {
-// 	while System::block_number() < n {
-// 		if System::block_number() > 1 {
-// 			System::on_finalize(System::block_number());
-// 		}
-// 		System::set_block_number(System::block_number() + 1);
-// 		System::on_initialize(System::block_number());
-// 	}
-// }

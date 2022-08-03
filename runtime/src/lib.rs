@@ -6,8 +6,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use frame_support::traits::{ConstU16, ReservableCurrency};
-use frame_system::{EnsureRoot, EnsureSignedBy};
+use frame_support::traits::ConstU16;
+use frame_system::EnsureRoot;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -20,7 +20,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
-use sp_std::{prelude::*, vec};
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -291,6 +291,7 @@ impl pallet_quadvoting::Config for Runtime {
 	type EraDuration = ConstU32<20>;
 	type MaxVotes = ConstU16<10>;
 	type Currency = Balances;
+	type OneBlock = ConstU32<1>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
