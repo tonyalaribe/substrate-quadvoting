@@ -1,6 +1,9 @@
 # Substrate node with quadratic voting pallet
 
-##Voting Pallet
+This project attempts to create a pallet which can be used to introduce quadratic voting to a substrain chain.
+It allows voting by reserving fees on the voter. The fees increase quadratically with each vote on a single topic by the same user.
+
+## Voting Pallet
 
 The voting pallet allows voting for groups of proposals (topics) in each era. Each era === 10 blocks.
 During an era, it's possible to vote for current active proposals which were proposed in the previous era.
